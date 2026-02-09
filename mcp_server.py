@@ -154,4 +154,46 @@ def generate_plot(plot_type: str = 'confusion_matrix') -> str:
         return f"Error generating plot: {str(e)} \n(คำแนะนำ: ต้องรัน AutoML ก่อนถึงจะพลอตกราฟได้)"
 
 if __name__ == "__main__":
-    mcp.run()
+    import sys
+    
+    # ถ้าสั่งรันด้วย --local ให้ทำงานเป็น Script ทดสอบ
+    if "--local" in sys.argv:
+        print("🖥️ Running in Local Mode (Using Diabetes Dataset)...")
+        
+        test_file = "diabetes.csv"  
+        target_col = "Class variable" 
+
+        # 1. สร้างไฟล์ CSV จากข้อมูลตัวอย่าง (เหมือนใน pycaretflow.py)
+        if not os.path.exists(test_file):
+            print(f"🔄 กำลังโหลดข้อมูล 'diabetes' และสร้างไฟล์ {test_file}...")
+            try:
+                from pycaret.datasets import get_data
+                df_mock = get_data('diabetes', verbose=False) 
+                df_mock.to_csv(test_file, index=False)
+                print(f"✅ สร้างไฟล์ {test_file} สำเร็จ!")
+            except Exception as e:
+                print(f"❌ Error creating file: {e}")
+                sys.exit(1)
+        
+        # 2. ทดสอบฟังก์ชัน 1: ดูข้อมูล
+        print(f"\n--- 1. Testing get_dataset_info ---")
+        print(get_dataset_info(test_file))
+        
+        # 3. ทดสอบฟังก์ชัน 2: เจาะดูคอลัมน์คำตอบ
+        print(f"\n--- 2. Testing inspect_column ({target_col}) ---")
+        print(inspect_column(test_file, target_col))
+        
+        # 4. ทดสอบฟังก์ชัน 3: รัน AutoML (เหมือนใน pycaretflow.py)
+        print(f"\n--- 3. Testing run_automl ---")
+        print("⏳ กำลังรัน PyCaret... (อาจใช้เวลา 1-2 นาที)")
+        print(run_automl(test_file, target_col))
+
+        # 5. ทดสอบฟังก์ชัน 4: สร้างกราฟ
+        print(f"\n--- 4. Testing generate_plot ---")
+        print(generate_plot('confusion_matrix'))
+        
+        print("\n✅ Local Test Complete! (PyCaret Flow Finished)")
+        
+    else:
+    
+        mcp.run()
